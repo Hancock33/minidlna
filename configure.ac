@@ -47,7 +47,6 @@ AC_DEFINE_UNQUOTED([ROOTDEV_MODELNAME],"Digital media server (MiniDLNA)", [Model
 AC_DEFINE_UNQUOTED([ROOTDEV_MODELDESCRIPTION],"MiniDLNA on " OS_NAME, [Model description])
 AC_DEFINE_UNQUOTED([ROOTDEV_MODELURL],OS_URL,[Model URL])
 
-
 ################################################################################################################
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
@@ -404,7 +403,7 @@ for dir in "" /usr/local $SEARCH_DIR; do
     AC_CHECK_LIB([exif], [exif_data_new_from_file], [LIBEXIF_LIBS="-lexif"], [unset ac_cv_lib_exif_exif_data_new_from_file; LDFLAGS="$LDFLAGS_SAVE"; continue])
     break
 done
-test x"$ac_cv_lib_jpeg_jpeg_set_defaults" = x"yes" || AC_MSG_ERROR([Could not find libexif])
+test x"$ac_cv_lib_exif_exif_data_new_from_file" = x"yes" || AC_MSG_ERROR([Could not find libexif])
 AC_SUBST(LIBEXIF_LIBS)
 
 LDFLAGS_SAVE="$LDFLAGS"
@@ -495,7 +494,12 @@ AC_CHECK_HEADERS([arpa/inet.h asm/unistd.h endian.h machine/endian.h fcntl.h lib
 test x"$ac_cv_header_poll_h" != x"yes" && AC_MSG_ERROR([poll.h not found or not usable])
 test x"$ac_cv_header_sys_queue_h" != x"yes" && AC_MSG_ERROR([sys/queue.h not found or not usable])
 
-AC_CHECK_FUNCS(inotify_init, AC_DEFINE(HAVE_INOTIFY,1,[Whether kernel has inotify support]), [
+AC_CHECK_FUNCS(inotify_init, 
+[
+    AC_DEFINE(HAVE_INOTIFY,1,[Whether kernel has inotify support])
+    AM_CONDITIONAL(HAVE_INOTIFY, true)
+],
+[
     AC_MSG_CHECKING([for __NR_inotify_init syscall])
     AC_COMPILE_IFELSE(
          [AC_LANG_PROGRAM(
@@ -511,9 +515,11 @@ AC_CHECK_FUNCS(inotify_init, AC_DEFINE(HAVE_INOTIFY,1,[Whether kernel has inotif
          [
              AC_MSG_RESULT([yes])
              AC_DEFINE(HAVE_INOTIFY,1,[Whether kernel has inotify support])
+             AM_CONDITIONAL(HAVE_INOTIFY, true)
          ],
          [
              AC_MSG_RESULT([no])
+             AM_CONDITIONAL(HAVE_INOTIFY, false)
          ])
 ])
 
